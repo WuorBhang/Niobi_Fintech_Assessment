@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: treasury-system
+  labels:
+    name: treasury-system
+    environment: production

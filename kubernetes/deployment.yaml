@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: treasury-frontend
+  namespace: treasury-system
+  labels:
+    app: treasury-frontend
+    version: v1
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: treasury-frontend
+  template:
+    metadata:
+      labels:
+        app: treasury-frontend
+        version: v1
+    spec:
+      containers:
+      - name: frontend
+        image: ghcr.io/your-org/treasury-management:latest
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "256Mi"
+            cpu: "200m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 80
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        env:
+        - name: NODE_ENV
+          value: "production"
+        - name: API_URL
+          valueFrom:
+            configMapKeyRef:
+              name: treasury-config
+              key: api-url
+      imagePullSecrets:
+      - name: ghcr-secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: treasury-frontend-service
+  namespace: treasury-system
+spec:
+  selector:
+    app: treasury-frontend
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: treasury-ingress
+  namespace: treasury-system
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rate-limit: "100"
+    nginx.ingress.kubernetes.io/rate-limit-window: "1m"
+spec:
+  tls:
+  - hosts:
+    - treasury.yourdomain.com
+    secretName: treasury-tls
+  rules:
+  - host: treasury.yourdomain.com
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: treasury-frontend-service
+            port:
+              number: 80

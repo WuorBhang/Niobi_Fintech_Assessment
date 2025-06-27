@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: treasury-config
+  namespace: treasury-system
+data:
+  api-url: "https://api.treasury.yourdomain.com"
+  redis-url: "redis://treasury-redis:6379"
+  environment: "production"
+  log-level: "info"

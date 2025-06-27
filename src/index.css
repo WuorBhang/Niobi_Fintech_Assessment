@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-gray-50 font-sans antialiased;
+  }
+}
+
+@layer components {
+  .card {
+    @apply bg-white rounded-xl shadow-sm border border-gray-200 p-6;
+  }
+  
+  .btn-primary {
+    @apply bg-primary-600 hover:bg-primary-700 text-white font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-100 hover:bg-gray-200 text-gray-700 font-medium py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200;
+  }
+  
+  .select-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-transparent transition-all duration-200 bg-white;
+  }
+}
+
+.currency-kes {
+  @apply bg-green-50 border-green-200 text-green-800;
+}
+
+.currency-usd {
+  @apply bg-blue-50 border-blue-200 text-blue-800;
+}
+
+.currency-ngn {
+  @apply bg-purple-50 border-purple-200 text-purple-800;
+}
+
+.status-completed {
+  @apply bg-success-100 text-success-800;
+}
+
+.status-pending {
+  @apply bg-warning-100 text-warning-800;
+}
+
+.status-scheduled {
+  @apply bg-primary-100 text-primary-800;
+}
