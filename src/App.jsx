@@ -13,6 +13,7 @@ function App() {
     accounts, 
     transactions, 
     loading, 
+    dbConnected,
     executeTransfer, 
     reverseTransaction,
     getFilteredTransactions,
@@ -32,7 +33,7 @@ function App() {
   const renderContent = () => {
     switch (activeTab) {
       case 'dashboard':
-        return <Dashboard accounts={accounts} transactions={transactions} />;
+        return <Dashboard accounts={accounts} transactions={transactions} dbConnected={dbConnected} />;
       case 'accounts':
         return (
           <div className="space-y-6">
@@ -58,6 +59,7 @@ function App() {
             onReverseTransaction={reverseTransaction}
             isTransactionReversed={isTransactionReversed}
             loading={loading}
+            dbConnected={dbConnected}
           />
         );
       default:
@@ -77,6 +79,11 @@ function App() {
                   <BarChart3 className="w-5 h-5 text-white" />
                 </div>
                 <h1 className="text-xl font-bold text-gray-900">Treasury Manager</h1>
+                {dbConnected && (
+                  <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
+                    MongoDB Connected
+                  </span>
+                )}
               </div>
             </div>
             
@@ -152,7 +159,9 @@ function App() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg p-6 flex items-center space-x-3">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary-600"></div>
-            <span className="text-gray-900 font-medium">Processing...</span>
+            <span className="text-gray-900 font-medium">
+              {dbConnected ? 'Saving to MongoDB...' : 'Processing...'}
+            </span>
           </div>
         </div>
       )}
