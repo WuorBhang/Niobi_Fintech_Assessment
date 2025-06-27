@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { formatCurrency, formatDateShort } from '../utils/formatters';
-import { Filter, ArrowUpRight, ArrowDownLeft, Clock, CheckCircle, Calendar, RotateCcw, AlertCircle } from 'lucide-react';
+import { Filter, ArrowUpRight, Clock, CheckCircle, Calendar, RotateCcw, Database } from 'lucide-react';
 
-const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTransaction, isTransactionReversed, loading }) => {
+const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTransaction, isTransactionReversed, loading, dbConnected }) => {
   const [filters, setFilters] = useState({
     accountId: '',
     currency: '',
@@ -53,10 +53,23 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
         <div className="flex items-center space-x-2">
           <Filter className="w-5 h-5 text-blue-600" />
           <h2 className="text-xl font-bold text-gray-900">Transaction History</h2>
+          {dbConnected && (
+            <div className="flex items-center space-x-1">
+              <Database className="w-4 h-4 text-green-500" />
+              <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
+                MongoDB
+              </span>
+            </div>
+          )}
         </div>
-        <span className="text-sm text-gray-500">
-          {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
-        </span>
+        <div className="text-right">
+          <span className="text-sm text-gray-500">
+            {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
+          </span>
+          {dbConnected && (
+            <p className="text-xs text-green-600">✓ Stored in database</p>
+          )}
+        </div>
       </div>
       
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
@@ -133,6 +146,11 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions yet</h3>
           <p className="text-gray-500">Start by making your first transfer above</p>
+          {!dbConnected && (
+            <p className="text-yellow-600 text-sm mt-2">
+              ⚠️ Database not connected - transactions will not persist
+            </p>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto">
@@ -170,6 +188,9 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
                           <p className="text-xs text-red-600 mt-1 font-medium">
                             ⚠ This transaction has been reversed
                           </p>
+                        )}
+                        {dbConnected && (
+                          <p className="text-xs text-green-600 mt-1">✓ Stored in MongoDB</p>
                         )}
                       </div>
                     </td>

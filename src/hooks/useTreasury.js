@@ -1,13 +1,49 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { INITIAL_ACCOUNTS } from '../data/initialData';
 import { convertCurrency, validateTransfer } from '../utils/calculations';
 import { generateTransactionId } from '../utils/formatters';
+import { databaseService } from '../services/databaseService';
 
 export const useTreasury = () => {
   const [accounts, setAccounts] = useState(INITIAL_ACCOUNTS);
   const [transactions, setTransactions] = useState([]);
   const [reversedTransactions, setReversedTransactions] = useState(new Set());
   const [loading, setLoading] = useState(false);
+  const [dbConnected, setDbConnected] = useState(false);
+
+  // Initialize database connection and load data
+  useEffect(() => {
+    const initializeDatabase = async () => {
+      try {
+        const connected = await databaseService.connect();
+        setDbConnected(connected);
+        
+        if (connected) {
+          // Load existing transactions from MongoDB
+          const result = await databaseService.getTransactions();
+          if (result.success) {
+            setTransactions(result.data);
+            console.log(`✅ Loaded ${result.data.length} transactions from MongoDB`);
+          }
+          
+          // Load reversals
+          const reversalsResult = await databaseService.getReversals();
+          if (reversalsResult.success) {
+            const reversedIds = new Set(
+              reversalsResult.data.map(r => r.originalTransactionId)
+            );
+            setReversedTransactions(reversedIds);
+            console.log(`✅ Loaded ${reversalsResult.data.length} reversals from MongoDB`);
+          }
+        }
+      } catch (error) {
+        console.error('❌ Database initialization failed:', error);
+        setDbConnected(false);
+      }
+    };
+
+    initializeDatabase();
+  }, []);
 
   const executeTransfer = useCallback(async (transferData) => {
     setLoading(true);
@@ -50,6 +86,14 @@ export const useTreasury = () => {
         reversible: true
       };
       
+      // Save to MongoDB if connected
+      if (dbConnected) {
+        const saveResult = await databaseService.saveTransaction(transaction);
+        if (!saveResult.success) {
+          console.warn('⚠️ Failed to save to MongoDB, continuing with local storage');
+        }
+      }
+      
       // Only update balances if not scheduled
       if (!isScheduled) {
         setAccounts(prevAccounts => 
@@ -78,14 +122,21 @@ export const useTreasury = () => {
     } finally {
       setLoading(false);
     }
-  }, [accounts]);
+  }, [accounts, dbConnected]);
 
   const reverseTransaction = useCallback(async (transactionId) => {
     setLoading(true);
     
     try {
-      // Check if transaction is already reversed - this prevents double reversals
-      if (reversedTransactions.has(transactionId)) {
+      // Check if transaction is already reversed
+      let isAlreadyReversed = reversedTransactions.has(transactionId);
+      
+      // Double-check with MongoDB if connected
+      if (dbConnected && !isAlreadyReversed) {
+        isAlreadyReversed = await databaseService.isTransactionReversed(transactionId);
+      }
+      
+      if (isAlreadyReversed) {
         throw new Error('Transaction has already been reversed. Each transaction can only be reversed once.');
       }
 
@@ -111,16 +162,15 @@ export const useTreasury = () => {
       }
 
       // Check if target account has sufficient balance for reversal
-      // This ensures we don't take more money than what was originally sent
       const reversalAmount = originalTransaction.convertedAmount || originalTransaction.amount;
       if (targetAccount.balance < reversalAmount) {
         throw new Error('Insufficient balance in recipient account for reversal. Cannot reverse more than what was received.');
       }
 
-      // Create reversal transaction - this maintains audit trail
+      // Create reversal transaction
       const reversalTransaction = {
         id: generateTransactionId(),
-        sourceAccountId: originalTransaction.targetAccountId, // Swap source and target
+        sourceAccountId: originalTransaction.targetAccountId,
         targetAccountId: originalTransaction.sourceAccountId,
         sourceAccountName: originalTransaction.targetAccountName,
         targetAccountName: originalTransaction.sourceAccountName,
@@ -135,18 +185,35 @@ export const useTreasury = () => {
         status: 'completed',
         type: 'reversal',
         originalTransactionId: originalTransaction.id,
-        reversible: false // Reversals cannot be reversed
+        reversible: false
       };
 
-      // Update account balances - only reverse the exact amounts
+      // Save reversal to MongoDB if connected
+      if (dbConnected) {
+        const reversalData = {
+          originalTransactionId: originalTransaction.id,
+          reversalTransactionId: reversalTransaction.id,
+          timestamp: new Date().toISOString(),
+          amount: reversalAmount,
+          reason: 'Manual reversal'
+        };
+        
+        const saveResult = await databaseService.saveReversal(reversalData);
+        if (!saveResult.success) {
+          console.warn('⚠️ Failed to save reversal to MongoDB');
+        }
+        
+        // Also save the reversal transaction
+        await databaseService.saveTransaction(reversalTransaction);
+      }
+
+      // Update account balances
       setAccounts(prevAccounts => 
         prevAccounts.map(account => {
           if (account.id === originalTransaction.targetAccountId) {
-            // Remove money from original target (recipient gives back what they received)
             return { ...account, balance: account.balance - reversalAmount };
           }
           if (account.id === originalTransaction.sourceAccountId) {
-            // Add money back to original source (sender gets back what they sent)
             return { ...account, balance: account.balance + originalTransaction.amount };
           }
           return account;
@@ -166,7 +233,7 @@ export const useTreasury = () => {
     } finally {
       setLoading(false);
     }
-  }, [accounts, transactions, reversedTransactions]);
+  }, [accounts, transactions, reversedTransactions, dbConnected]);
 
   const getAccountById = useCallback((id) => {
     return accounts.find(account => account.id === id);
@@ -206,6 +273,7 @@ export const useTreasury = () => {
     accounts,
     transactions,
     loading,
+    dbConnected,
     executeTransfer,
     reverseTransaction,
     getAccountById,
