@@ -55,9 +55,9 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
           <h2 className="text-xl font-bold text-gray-900">Transaction History</h2>
           {dbConnected && (
             <div className="flex items-center space-x-1">
-              <Database className="w-4 h-4 text-green-500" />
-              <span className="text-xs px-2 py-1 bg-green-100 text-green-800 rounded-full font-medium">
-                MongoDB
+              <Database className="w-4 h-4 text-blue-500" />
+              <span className="text-xs px-2 py-1 bg-blue-100 text-blue-800 rounded-full font-medium">
+                Demo Mode
               </span>
             </div>
           )}
@@ -67,7 +67,7 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
             {transactions.length} transaction{transactions.length !== 1 ? 's' : ''}
           </span>
           {dbConnected && (
-            <p className="text-xs text-green-600">✓ Stored in database</p>
+            <p className="text-xs text-blue-600">✓ Simulated storage</p>
           )}
         </div>
       </div>
@@ -146,9 +146,9 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
           </div>
           <h3 className="text-lg font-medium text-gray-900 mb-2">No transactions yet</h3>
           <p className="text-gray-500">Start by making your first transfer above</p>
-          {!dbConnected && (
-            <p className="text-yellow-600 text-sm mt-2">
-              ⚠️ Database not connected - transactions will not persist
+          {dbConnected && (
+            <p className="text-blue-600 text-sm mt-2">
+              💡 This is a demo - transactions are simulated
             </p>
           )}
         </div>
@@ -190,7 +190,7 @@ const TransactionTable = ({ transactions, accounts, onFilterChange, onReverseTra
                           </p>
                         )}
                         {dbConnected && (
-                          <p className="text-xs text-green-600 mt-1">✓ Stored in MongoDB</p>
+                          <p className="text-xs text-blue-600 mt-1">✓ Demo Mode</p>
                         )}
                       </div>
                     </td>
