@@ -2,7 +2,7 @@ import axios from 'axios';
 
 class DatabaseService {
   constructor() {
-    this.baseUrl = 'http://localhost:3001/api'; // Backend API URL
+    this.baseUrl = `${import.meta.env.VITE_API_URL}/api`; // Use environment variable for API URL
     this.isConnected = false;
     this.connectionString = 'mongodb+srv://NiobiFintechAssessment:NiobiFintechAssessment@niobifintechassessment.1uep0g9.mongodb.net/?retryWrites=true&w=majority';
   }

@@ -13,7 +13,7 @@ services:
       - /app/node_modules
     environment:
       - NODE_ENV=development
-      - VITE_API_URL=http://localhost:3001
+      - VITE_API_URL=http://backend-dev:3001
     command: npm run dev
     networks:
       - treasury-dev-network
