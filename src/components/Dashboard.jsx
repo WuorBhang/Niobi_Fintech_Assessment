@@ -26,31 +26,31 @@ const Dashboard = ({ accounts, transactions, dbConnected }) => {
   return (
     <div className="space-y-6">
       {/* Database Connection Status */}
-      <div className={`card ${dbConnected ? 'bg-green-50 border-green-200' : 'bg-yellow-50 border-yellow-200'}`}>
+      <div className={`card ${dbConnected ? 'bg-green-50 border-green-200' : 'bg-blue-50 border-blue-200'}`}>
         <div className="flex items-center space-x-3">
-          <div className={`p-2 rounded-lg ${dbConnected ? 'bg-green-100' : 'bg-yellow-100'}`}>
-            <Database className={`w-5 h-5 ${dbConnected ? 'text-green-600' : 'text-yellow-600'}`} />
+          <div className={`p-2 rounded-lg ${dbConnected ? 'bg-green-100' : 'bg-blue-100'}`}>
+            <Database className={`w-5 h-5 ${dbConnected ? 'text-green-600' : 'text-blue-600'}`} />
           </div>
           <div className="flex-1">
             <div className="flex items-center space-x-2">
-              <h3 className={`font-semibold ${dbConnected ? 'text-green-900' : 'text-yellow-900'}`}>
-                MongoDB Atlas Connection
+              <h3 className={`font-semibold ${dbConnected ? 'text-green-900' : 'text-blue-900'}`}>
+                Database Storage
               </h3>
               {dbConnected ? (
                 <Wifi className="w-4 h-4 text-green-500" />
               ) : (
-                <WifiOff className="w-4 h-4 text-yellow-500" />
+                <WifiOff className="w-4 h-4 text-blue-500" />
               )}
               <span className={`text-xs px-2 py-1 rounded-full font-medium ${
-                dbConnected ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                dbConnected ? 'bg-green-100 text-green-800' : 'bg-blue-100 text-blue-800'
               }`}>
-                {dbConnected ? 'CONNECTED' : 'OFFLINE'}
+                {dbConnected ? 'SIMULATED' : 'LOCAL STORAGE'}
               </span>
             </div>
-            <p className={`text-sm ${dbConnected ? 'text-green-700' : 'text-yellow-700'}`}>
+            <p className={`text-sm ${dbConnected ? 'text-green-700' : 'text-blue-700'}`}>
               {dbConnected 
-                ? 'All transactions are being saved to MongoDB Atlas database'
-                : 'Using local storage - transactions will not persist after refresh'
+                ? 'Database operations are simulated for this demo deployment'
+                : 'Using browser local storage - data persists during session'
               }
             </p>
           </div>
@@ -76,7 +76,7 @@ const Dashboard = ({ accounts, transactions, dbConnected }) => {
               <p className="text-sm font-medium text-gray-600">Total Transactions</p>
               <p className="text-2xl font-bold text-gray-900">{stats.totalTransactions}</p>
               {dbConnected && (
-                <p className="text-xs text-green-600 mt-1">✓ Stored in MongoDB</p>
+                <p className="text-xs text-blue-600 mt-1">✓ Demo Mode</p>
               )}
             </div>
             <div className="p-3 bg-green-100 rounded-lg">
@@ -161,7 +161,7 @@ const Dashboard = ({ accounts, transactions, dbConnected }) => {
                       </p>
                       <p className="text-xs text-gray-500">{tx.id}</p>
                       {dbConnected && (
-                        <p className="text-xs text-green-600">✓ Saved to MongoDB</p>
+                        <p className="text-xs text-blue-600">✓ Demo Mode</p>
                       )}
                     </div>
                   </div>
